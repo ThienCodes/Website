@@ -5,9 +5,7 @@ function id(x) {
 const L = id("login");
 const P = id("panel");
 
-if (admin()) {
-    show();
-}
+
 
 id("loginForm").onsubmit = function(event) {
     event.preventDefault();
