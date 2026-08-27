@@ -1,1 +1,263 @@
-const L=id("login"),P=id("panel");if(admin())show();id("loginBtn").onclick=()=>{if(id("password").value==="CHANGE-ME"){sessionStorage.setItem(ADMIN,"1");show()}else id("loginError").textContent="Incorrect password."};function show(){L.classList.add("hidden");P.classList.remove("hidden");render()}id("logout").onclick=()=>{sessionStorage.removeItem(ADMIN);location.reload()};function render(){let d=data();list("classes",d.yen.classes,"classes");list("titles",d.yen.titles,"titles");list("traits",d.yen.traits,"traits");list("passives",d.yen.passives,"passives");list("potions",d.yen.potions,"potions");id("statsEdit").innerHTML=Object.entries(d.stats).map(([k,v])=>`<div class="adminRow"><b>${k}</b><input data-stat="${k}" data-i="0" type="number" value="${v[0]}"><input data-stat="${k}" data-i="1" type="number" value="${v[1]}"></div>`).join("");id("activityEdit").innerHTML=Object.entries(d.activities).map(([k,v])=>`<label>${k}<input data-act="${k}" type="number" value="${v}"></label>`).join("");id("stockTokens").value=d.stock.tokens;id("stockKeys").value=d.stock.keys;document.querySelectorAll("[data-stat]").forEach(x=>x.onchange=()=>{let d=data();d.stats[x.dataset.stat][+x.dataset.i]=+x.value;put(d,`Updated ${x.dataset.stat}`);render()});document.querySelectorAll("[data-act]").forEach(x=>x.onchange=()=>{let d=data();d.activities[x.dataset.act]=+x.value;put(d,`Updated ${x.dataset.act}`);render()});document.querySelectorAll(".edit").forEach(b=>b.onclick=()=>edit(b.dataset.type,+b.dataset.i));document.querySelectorAll(".del").forEach(b=>b.onclick=()=>del(b.dataset.type,+b.dataset.i));document.querySelectorAll(".add").forEach(b=>b.onclick=()=>add(b.dataset.type));id("history").innerHTML=history().map(x=>`<div class="history"><small>${x.t}</small> — ${x.m}</div>`).join("")||"<p>No changes yet.</p>"}function list(el,a,t){id(el).innerHTML=a.map((x,i)=>`<div class="adminRow"><input value="${x[0]}" readonly><input value="${x[1]}" readonly><div><button class="btn edit" data-type="${t}" data-i="${i}">Edit</button><button class="btn danger del" data-type="${t}" data-i="${i}">Delete</button></div></div>`).join("")}function edit(t,i){let d=data(),x=d.yen[t][i],n=prompt("Name:",x[0]);if(n===null)return;let v=prompt(t==="classes"?"Multiplier:":"Yen bonus %:",x[1]);if(v===null)return;x[0]=n.trim();x[1]=+v;put(d,`Edited ${t}: ${x[0]}`);render()}function del(t,i){let d=data(),n=d.yen[t][i][0];if(confirm(`Delete ${n}?`)){d.yen[t].splice(i,1);put(d,`Deleted ${t}: ${n}`);render()}}function add(t){let d=data(),n=prompt("Name:");if(!n)return;let v=prompt(t==="classes"?"Multiplier:":"Yen bonus %:","0");if(v===null)return;d.yen[t].push([n.trim(),+v]);put(d,`Added ${t}: ${n}`);render()}id("stockSave").onclick=()=>{let d=data();d.stock.tokens=+id("stockTokens").value||0;d.stock.keys=+id("stockKeys").value||0;put(d,"Updated public stock");render()};id("backup").onclick=()=>{let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data(),null,2)],{type:"application/json"}));a.download="ghostly-backup.json";a.click();hist("Created backup")};id("undo").onclick=()=>alert("The prototype records changes, but full one-click undo requires the backend version. Use a downloaded backup to restore data.")
+function id(x) {
+    return document.getElementById(x);
+}
+
+const L = id("login");
+const P = id("panel");
+
+if (admin()) {
+    show();
+}
+
+id("loginBtn").onclick = () => {
+    if (id("password").value === "CHANGE-ME") {
+        sessionStorage.setItem(ADMIN, "1");
+        show();
+    } else {
+        id("loginError").textContent = "Incorrect password.";
+    }
+};
+
+function show() {
+    L.classList.add("hidden");
+    P.classList.remove("hidden");
+    render();
+}
+
+id("logout").onclick = () => {
+    sessionStorage.removeItem(ADMIN);
+    location.reload();
+};
+
+function render() {
+    let d = data();
+
+    list("classes", d.yen.classes, "classes");
+    list("titles", d.yen.titles, "titles");
+    list("traits", d.yen.traits, "traits");
+    list("passives", d.yen.passives, "passives");
+    list("potions", d.yen.potions, "potions");
+
+    id("statsEdit").innerHTML = Object.entries(d.stats)
+        .map(([k, v]) => `
+            <div class="adminRow">
+                <b>${k}</b>
+                <input data-stat="${k}" data-i="0" type="number" value="${v[0]}">
+                <input data-stat="${k}" data-i="1" type="number" value="${v[1]}">
+            </div>
+        `).join("");
+
+    id("activityEdit").innerHTML = Object.entries(d.activities)
+        .map(([k, v]) => `
+            <label>
+                ${k}
+                <input data-act="${k}" type="number" value="${v}">
+            </label>
+        `).join("");
+
+    id("stockTokens").value = d.stock.tokens;
+    id("stockKeys").value = d.stock.keys;
+
+    document.querySelectorAll("[data-stat]").forEach(x => {
+        x.onchange = () => {
+            let d = data();
+
+            d.stats[x.dataset.stat][+x.dataset.i] = +x.value;
+
+            put(
+                d,
+                `Updated ${x.dataset.stat}`
+            );
+
+            render();
+        };
+    });
+
+    document.querySelectorAll("[data-act]").forEach(x => {
+        x.onchange = () => {
+            let d = data();
+
+            d.activities[x.dataset.act] = +x.value;
+
+            put(
+                d,
+                `Updated ${x.dataset.act}`
+            );
+
+            render();
+        };
+    });
+
+    document.querySelectorAll(".edit").forEach(b => {
+        b.onclick = () => edit(
+            b.dataset.type,
+            +b.dataset.i
+        );
+    });
+
+    document.querySelectorAll(".del").forEach(b => {
+        b.onclick = () => del(
+            b.dataset.type,
+            +b.dataset.i
+        );
+    });
+
+    document.querySelectorAll(".add").forEach(b => {
+        b.onclick = () => add(b.dataset.type);
+    });
+
+    id("history").innerHTML =
+        history()
+            .map(x => `
+                <div class="history">
+                    <small>${x.t}</small> — ${x.m}
+                </div>
+            `)
+            .join("")
+        || "<p>No changes yet.</p>";
+}
+
+function list(el, a, t) {
+    id(el).innerHTML = a.map((x, i) => `
+        <div class="adminRow">
+            <input value="${x[0]}" readonly>
+            <input value="${x[1]}" readonly>
+
+            <div>
+                <button
+                    class="btn edit"
+                    data-type="${t}"
+                    data-i="${i}">
+                    Edit
+                </button>
+
+                <button
+                    class="btn danger del"
+                    data-type="${t}"
+                    data-i="${i}">
+                    Delete
+                </button>
+            </div>
+        </div>
+    `).join("");
+}
+
+function edit(t, i) {
+    let d = data();
+    let x = d.yen[t][i];
+
+    let n = prompt("Name:", x[0]);
+
+    if (n === null) {
+        return;
+    }
+
+    let v = prompt(
+        t === "classes"
+            ? "Multiplier:"
+            : "Yen bonus %:",
+        x[1]
+    );
+
+    if (v === null) {
+        return;
+    }
+
+    x[0] = n.trim();
+    x[1] = +v;
+
+    put(
+        d,
+        `Edited ${t}: ${x[0]}`
+    );
+
+    render();
+}
+
+function del(t, i) {
+    let d = data();
+    let n = d.yen[t][i][0];
+
+    if (confirm(`Delete ${n}?`)) {
+        d.yen[t].splice(i, 1);
+
+        put(
+            d,
+            `Deleted ${t}: ${n}`
+        );
+
+        render();
+    }
+}
+
+function add(t) {
+    let d = data();
+
+    let n = prompt("Name:");
+
+    if (!n) {
+        return;
+    }
+
+    let v = prompt(
+        t === "classes"
+            ? "Multiplier:"
+            : "Yen bonus %:",
+        "0"
+    );
+
+    if (v === null) {
+        return;
+    }
+
+    d.yen[t].push([
+        n.trim(),
+        +v
+    ]);
+
+    put(
+        d,
+        `Added ${t}: ${n}`
+    );
+
+    render();
+}
+
+id("stockSave").onclick = () => {
+    let d = data();
+
+    d.stock.tokens =
+        +id("stockTokens").value || 0;
+
+    d.stock.keys =
+        +id("stockKeys").value || 0;
+
+    put(
+        d,
+        "Updated public stock"
+    );
+
+    render();
+};
+
+id("backup").onclick = () => {
+    let a = document.createElement("a");
+
+    a.href = URL.createObjectURL(
+        new Blob(
+            [JSON.stringify(data(), null, 2)],
+            { type: "application/json" }
+        )
+    );
+
+    a.download = "ghostly-backup.json";
+    a.click();
+
+    hist("Created backup");
+};
+
+id("undo").onclick = () => {
+    alert(
+        "The prototype records changes, but full one-click undo requires the backend version. Use a downloaded backup to restore data."
+    );
+};
