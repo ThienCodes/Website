@@ -1,277 +1,594 @@
-function id(x) {
-    return document.getElementById(x);
+// ===============================
+// ADMIN LOGIN
+// ===============================
+
+const ADMIN_PASSWORD = "CHANGE-ME";
+
+const loginSection = document.getElementById("login");
+const adminPanel = document.getElementById("panel");
+const loginForm = document.getElementById("loginForm");
+const passwordInput = document.getElementById("password");
+const loginError = document.getElementById("loginError");
+
+
+// Check if already logged in
+if (sessionStorage.getItem("ghostlyAdmin") === "1") {
+    openAdmin();
 }
 
-const L = id("login");
-const P = id("panel");
 
+// Login
+loginForm.addEventListener("submit", function(event) {
 
-
-id("loginForm").onsubmit = function(event) {
     event.preventDefault();
 
-    const password = document.getElementById("password").value;
+    const password = passwordInput.value;
 
-    if (password === "CHANGE-ME") {
+    if (password === ADMIN_PASSWORD) {
+
         sessionStorage.setItem("ghostlyAdmin", "1");
 
-        document.getElementById("login").style.display = "none";
-        document.getElementById("panel").style.display = "block";
+        openAdmin();
 
-        render();
     } else {
-        document.getElementById("loginError").textContent =
-            "Incorrect password.";
-    }
-};
-    if (id("password").value === "CHANGE-ME") {
-        sessionStorage.setItem(ADMIN, "1");
-        show();
-    } else {
-        id("loginError").textContent = "Incorrect password.";
-    }
-};
 
-function show() {
-    L.classList.add("hidden");
-    P.classList.remove("hidden");
-    render();
+        loginError.textContent = "Incorrect password.";
+
+    }
+
+});
+
+
+// Open Admin
+function openAdmin() {
+
+    loginSection.style.display = "none";
+
+    adminPanel.style.display = "block";
+
+    renderAdmin();
+
 }
 
-id("logout").onclick = () => {
-    sessionStorage.removeItem(ADMIN);
+
+// Logout
+document.getElementById("logout").addEventListener("click", function() {
+
+    sessionStorage.removeItem("ghostlyAdmin");
+
     location.reload();
-};
 
-function render() {
-    let d = data();
+});
 
-    list("classes", d.yen.classes, "classes");
-    list("titles", d.yen.titles, "titles");
-    list("traits", d.yen.traits, "traits");
-    list("passives", d.yen.passives, "passives");
-    list("potions", d.yen.potions, "potions");
 
-    id("statsEdit").innerHTML = Object.entries(d.stats)
-        .map(([k, v]) => `
-            <div class="adminRow">
-                <b>${k}</b>
-                <input data-stat="${k}" data-i="0" type="number" value="${v[0]}">
-                <input data-stat="${k}" data-i="1" type="number" value="${v[1]}">
-            </div>
-        `).join("");
+// ===============================
+// ADMIN DATA
+// ===============================
 
-    id("activityEdit").innerHTML = Object.entries(d.activities)
-        .map(([k, v]) => `
-            <label>
-                ${k}
-                <input data-act="${k}" type="number" value="${v}">
-            </label>
-        `).join("");
+function renderAdmin() {
 
-    id("stockTokens").value = d.stock.tokens;
-    id("stockKeys").value = d.stock.keys;
+    const d = data();
 
-    document.querySelectorAll("[data-stat]").forEach(x => {
-        x.onchange = () => {
-            let d = data();
+    renderList(
+        "classes",
+        d.yen.classes,
+        "classes"
+    );
 
-            d.stats[x.dataset.stat][+x.dataset.i] = +x.value;
+    renderList(
+        "titles",
+        d.yen.titles,
+        "titles"
+    );
+
+    renderList(
+        "traits",
+        d.yen.traits,
+        "traits"
+    );
+
+    renderList(
+        "passives",
+        d.yen.passives,
+        "passives"
+    );
+
+    renderList(
+        "potions",
+        d.yen.potions,
+        "potions"
+    );
+
+
+    // Stats
+
+    document.getElementById("statsEdit").innerHTML =
+        Object.entries(d.stats)
+        .map(([name, values]) => {
+
+            return `
+                <div class="adminRow">
+
+                    <b>${name}</b>
+
+                    <input
+                        type="number"
+                        value="${values[0]}"
+                        data-stat="${name}"
+                        data-index="0"
+                    >
+
+                    <input
+                        type="number"
+                        value="${values[1]}"
+                        data-stat="${name}"
+                        data-index="1"
+                    >
+
+                </div>
+            `;
+
+        })
+        .join("");
+
+
+    // Activities
+
+    document.getElementById("activityEdit").innerHTML =
+        Object.entries(d.activities)
+        .map(([name, value]) => {
+
+            return `
+                <label>
+
+                    ${name}
+
+                    <input
+                        type="number"
+                        value="${value}"
+                        data-activity="${name}"
+                    >
+
+                </label>
+            `;
+
+        })
+        .join("");
+
+
+    // Stock
+
+    document.getElementById("stockTokens").value =
+        d.stock.tokens;
+
+    document.getElementById("stockKeys").value =
+        d.stock.keys;
+
+
+    // Stats changes
+
+    document.querySelectorAll("[data-stat]")
+    .forEach(input => {
+
+        input.addEventListener("change", function() {
+
+            const d = data();
+
+            const stat =
+                this.dataset.stat;
+
+            const index =
+                Number(this.dataset.index);
+
+            d.stats[stat][index] =
+                Number(this.value);
 
             put(
                 d,
-                `Updated ${x.dataset.stat}`
+                `Updated ${stat}`
             );
 
-            render();
-        };
+        });
+
     });
 
-    document.querySelectorAll("[data-act]").forEach(x => {
-        x.onchange = () => {
-            let d = data();
 
-            d.activities[x.dataset.act] = +x.value;
+    // Activity changes
+
+    document.querySelectorAll("[data-activity]")
+    .forEach(input => {
+
+        input.addEventListener("change", function() {
+
+            const d = data();
+
+            const activity =
+                this.dataset.activity;
+
+            d.activities[activity] =
+                Number(this.value);
 
             put(
                 d,
-                `Updated ${x.dataset.act}`
+                `Updated ${activity}`
             );
 
-            render();
-        };
+        });
+
     });
 
-    document.querySelectorAll(".edit").forEach(b => {
-        b.onclick = () => edit(
-            b.dataset.type,
-            +b.dataset.i
-        );
+
+    // Edit buttons
+
+    document.querySelectorAll(".edit")
+    .forEach(button => {
+
+        button.addEventListener("click", function() {
+
+            editItem(
+                this.dataset.type,
+                Number(this.dataset.index)
+            );
+
+        });
+
     });
 
-    document.querySelectorAll(".del").forEach(b => {
-        b.onclick = () => del(
-            b.dataset.type,
-            +b.dataset.i
-        );
+
+    // Delete buttons
+
+    document.querySelectorAll(".delete")
+    .forEach(button => {
+
+        button.addEventListener("click", function() {
+
+            deleteItem(
+                this.dataset.type,
+                Number(this.dataset.index)
+            );
+
+        });
+
     });
 
-    document.querySelectorAll(".add").forEach(b => {
-        b.onclick = () => add(b.dataset.type);
+
+    // Add buttons
+
+    document.querySelectorAll(".add")
+    .forEach(button => {
+
+        button.addEventListener("click", function() {
+
+            addItem(
+                this.dataset.type
+            );
+
+        });
+
     });
 
-    id("history").innerHTML =
-        history()
-            .map(x => `
+
+    // History
+
+    const historyList = history();
+
+    document.getElementById("history").innerHTML =
+        historyList.length
+        ? historyList
+            .map(item => `
                 <div class="history">
-                    <small>${x.t}</small> — ${x.m}
+
+                    <small>${item.t}</small>
+
+                    — ${item.m}
+
                 </div>
             `)
             .join("")
-        || "<p>No changes yet.</p>";
+        : "<p>No changes yet.</p>";
+
 }
 
-function list(el, a, t) {
-    id(el).innerHTML = a.map((x, i) => `
-        <div class="adminRow">
-            <input value="${x[0]}" readonly>
-            <input value="${x[1]}" readonly>
 
-            <div>
-                <button
-                    class="btn edit"
-                    data-type="${t}"
-                    data-i="${i}">
-                    Edit
-                </button>
+// ===============================
+// LISTS
+// ===============================
 
-                <button
-                    class="btn danger del"
-                    data-type="${t}"
-                    data-i="${i}">
-                    Delete
-                </button>
-            </div>
-        </div>
-    `).join("");
+function renderList(container, items, type) {
+
+    document.getElementById(container).innerHTML =
+        items
+        .map((item, index) => {
+
+            return `
+                <div class="adminRow">
+
+                    <input
+                        value="${item[0]}"
+                        readonly
+                    >
+
+                    <input
+                        value="${item[1]}"
+                        readonly
+                    >
+
+                    <div>
+
+                        <button
+                            class="btn edit"
+                            data-type="${type}"
+                            data-index="${index}">
+                            Edit
+                        </button>
+
+                        <button
+                            class="btn danger delete"
+                            data-type="${type}"
+                            data-index="${index}">
+                            Delete
+                        </button>
+
+                    </div>
+
+                </div>
+            `;
+
+        })
+        .join("");
+
 }
 
-function edit(t, i) {
-    let d = data();
-    let x = d.yen[t][i];
 
-    let n = prompt("Name:", x[0]);
+// ===============================
+// EDIT
+// ===============================
 
-    if (n === null) {
-        return;
-    }
+function editItem(type, index) {
 
-    let v = prompt(
-        t === "classes"
-            ? "Multiplier:"
-            : "Yen bonus %:",
-        x[1]
-    );
+    const d = data();
 
-    if (v === null) {
-        return;
-    }
+    const item =
+        d.yen[type][index];
 
-    x[0] = n.trim();
-    x[1] = +v;
 
-    put(
-        d,
-        `Edited ${t}: ${x[0]}`
-    );
-
-    render();
-}
-
-function del(t, i) {
-    let d = data();
-    let n = d.yen[t][i][0];
-
-    if (confirm(`Delete ${n}?`)) {
-        d.yen[t].splice(i, 1);
-
-        put(
-            d,
-            `Deleted ${t}: ${n}`
+    const newName =
+        prompt(
+            "Name:",
+            item[0]
         );
 
-        render();
-    }
-}
 
-function add(t) {
-    let d = data();
-
-    let n = prompt("Name:");
-
-    if (!n) {
+    if (newName === null) {
         return;
     }
 
-    let v = prompt(
-        t === "classes"
-            ? "Multiplier:"
-            : "Yen bonus %:",
-        "0"
-    );
 
-    if (v === null) {
+    const newValue =
+        prompt(
+            type === "classes"
+                ? "Multiplier:"
+                : "Yen bonus percentage:",
+            item[1]
+        );
+
+
+    if (newValue === null) {
         return;
     }
 
-    d.yen[t].push([
-        n.trim(),
-        +v
-    ]);
+
+    item[0] =
+        newName.trim();
+
+    item[1] =
+        Number(newValue);
+
 
     put(
         d,
-        `Added ${t}: ${n}`
+        `Edited ${type}: ${item[0]}`
     );
 
-    render();
+
+    renderAdmin();
+
 }
 
-id("stockSave").onclick = () => {
-    let d = data();
+
+// ===============================
+// DELETE
+// ===============================
+
+function deleteItem(type, index) {
+
+    const d = data();
+
+    const name =
+        d.yen[type][index][0];
+
+
+    if (
+        !confirm(
+            `Are you sure you want to delete "${name}"?`
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    d.yen[type].splice(
+        index,
+        1
+    );
+
+
+    put(
+        d,
+        `Deleted ${type}: ${name}`
+    );
+
+
+    renderAdmin();
+
+}
+
+
+// ===============================
+// ADD
+// ===============================
+
+function addItem(type) {
+
+    const d = data();
+
+
+    const name =
+        prompt(
+            "Enter the name:"
+        );
+
+
+    if (!name) {
+        return;
+    }
+
+
+    const value =
+        prompt(
+            type === "classes"
+                ? "Enter multiplier:"
+                : "Enter Yen bonus percentage:",
+            "0"
+        );
+
+
+    if (value === null) {
+        return;
+    }
+
+
+    d.yen[type].push([
+        name.trim(),
+        Number(value)
+    ]);
+
+
+    put(
+        d,
+        `Added ${type}: ${name}`
+    );
+
+
+    renderAdmin();
+
+}
+
+
+// ===============================
+// PUBLIC STOCK
+// ===============================
+
+document
+.getElementById("stockSave")
+.addEventListener("click", function() {
+
+    const d = data();
 
     d.stock.tokens =
-        +id("stockTokens").value || 0;
+        Number(
+            document.getElementById(
+                "stockTokens"
+            ).value
+        ) || 0;
 
     d.stock.keys =
-        +id("stockKeys").value || 0;
+        Number(
+            document.getElementById(
+                "stockKeys"
+            ).value
+        ) || 0;
+
 
     put(
         d,
         "Updated public stock"
     );
 
-    render();
-};
 
-id("backup").onclick = () => {
-    let a = document.createElement("a");
+    renderAdmin();
 
-    a.href = URL.createObjectURL(
+});
+
+
+// ===============================
+// BACKUP
+// ===============================
+
+document
+.getElementById("backup")
+.addEventListener("click", function() {
+
+    const backup =
+        JSON.stringify(
+            data(),
+            null,
+            2
+        );
+
+
+    const blob =
         new Blob(
-            [JSON.stringify(data(), null, 2)],
-            { type: "application/json" }
-        )
+            [backup],
+            {
+                type:
+                    "application/json"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const link =
+        document.createElement("a");
+
+
+    link.href = url;
+
+    link.download =
+        "ghostly-dashboard-backup.json";
+
+
+    link.click();
+
+
+    URL.revokeObjectURL(url);
+
+
+    hist(
+        "Created backup"
     );
 
-    a.download = "ghostly-backup.json";
-    a.click();
 
-    hist("Created backup");
-};
+    renderAdmin();
 
-id("undo").onclick = () => {
+});
+
+
+// ===============================
+// UNDO
+// ===============================
+
+document
+.getElementById("undo")
+.addEventListener("click", function() {
+
     alert(
-        "The prototype records changes, but full one-click undo requires the backend version. Use a downloaded backup to restore data."
+        "Full Undo will be connected to the change history system in the next version."
     );
-};
+
+});
