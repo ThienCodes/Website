@@ -1,4 +1,8 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin</title><link rel="stylesheet" href="style.css"></head><body><nav><b>👻 Ghostly Dashboard</b><div><a href="index.html">Home</a><a href="stats.html">Stats</a><a href="yen.html">Yen</a><a href="alts.html">Alt Dashboard</a><a class="active" href="admin.html">Admin</a></div></nav><main><section id="login" class="card narrow"><small>PRIVATE</small><h1>Admin Login</h1><p>Prototype password: <code>CHANGE-ME</code></p><input id="password" type="password" placeholder="Password"><button id="loginBtn" class="btn primary">Log In</button><p id="loginError" class="error"></p></section>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin</title><link rel="stylesheet" href="style.css"></head><body><nav><b>👻 Ghostly Dashboard</b><div><a href="index.html">Home</a><a href="stats.html">Stats</a><a href="yen.html">Yen</a><a href="alts.html">Alt Dashboard</a><a class="active" href="admin.html">Admin</a></div></nav><main><section id="login" class="card narrow"><small>PRIVATE</small><h1>Admin Login</h1><p>Prototype password: <code>CHANGE-ME</code></p><form id="loginForm">
+    <input id="password" type="password" placeholder="Password">
+    <button type="submit" class="btn primary">Log In</button>
+    <p id="loginError" class="error"></p>
+</form></section>
 <section id="panel" class="hidden"><section class="card"><div class="sectionTitle"><div><small>CONTROL CENTER</small><h1>Data Management</h1></div><button id="logout" class="btn">Log Out</button></div><p>Edit the placeholder data below. Changes save in this browser.</p></section>
 <div class="adminGrid">
 <article class="card"><h2>Yen Classes</h2><div id="classes"></div><button class="btn primary add" data-type="classes">+ Add Class</button></article>
