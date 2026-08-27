@@ -8,7 +8,6 @@ A starter multi-page website designed for GitHub Pages.
 2. Alts Dashboard
 3. Stat Calculator
 4. Yen Calculator
-5. Requests
 
 ## Folder structure
 
