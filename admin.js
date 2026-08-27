@@ -9,14 +9,21 @@ if (admin()) {
     show();
 }
 
-id("loginForm").onsubmit = (event) => {
+id("loginForm").onsubmit = function(event) {
     event.preventDefault();
 
-    if (id("password").value === "CHANGE-ME") {
-        sessionStorage.setItem(ADMIN, "1");
-        show();
+    const password = document.getElementById("password").value;
+
+    if (password === "CHANGE-ME") {
+        sessionStorage.setItem("ghostlyAdmin", "1");
+
+        document.getElementById("login").style.display = "none";
+        document.getElementById("panel").style.display = "block";
+
+        render();
     } else {
-        id("loginError").textContent = "Incorrect password.";
+        document.getElementById("loginError").textContent =
+            "Incorrect password.";
     }
 };
     if (id("password").value === "CHANGE-ME") {
