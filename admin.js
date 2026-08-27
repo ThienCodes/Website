@@ -12,7 +12,7 @@ const loginError = document.getElementById("loginError");
 
 
 // Check if already logged in
-if (sessionStorage.getItem("ghostlyAdmin") === "1") {
+if (localStorage.getItem("ghostlyAdmin") === "1") {
     openAdmin();
 }
 
