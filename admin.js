@@ -54,7 +54,7 @@ function openAdmin() {
 // Logout
 document.getElementById("logout").addEventListener("click", function() {
 
-    sessionStorage.removeItem("ghostlyAdmin");
+    localStorage.removeItem("ghostlyAdmin");
 
     location.reload();
 
