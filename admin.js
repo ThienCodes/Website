@@ -26,7 +26,7 @@ loginForm.addEventListener("submit", function(event) {
 
     if (password === ADMIN_PASSWORD) {
 
-        sessionStorage.setItem("ghostlyAdmin", "1");
+        localStorage.setItem("ghostlyAdmin", "1");
 
         openAdmin();
 
