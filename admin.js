@@ -9,7 +9,16 @@ if (admin()) {
     show();
 }
 
-id("loginBtn").onclick = () => {
+id("loginForm").onsubmit = (event) => {
+    event.preventDefault();
+
+    if (id("password").value === "CHANGE-ME") {
+        sessionStorage.setItem(ADMIN, "1");
+        show();
+    } else {
+        id("loginError").textContent = "Incorrect password.";
+    }
+};
     if (id("password").value === "CHANGE-ME") {
         sessionStorage.setItem(ADMIN, "1");
         show();
