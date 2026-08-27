@@ -1,38 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Website | Yen Calculator</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-  <header class="site-header">
-    <div class="container nav-container">
-      <a class="logo" href="index.html">My Website</a>
-      <nav class="nav">
-        <a href="index.html">Home</a>
-        <a href="alts.html">Alts Dashboard</a>
-        <a href="stats.html">Stat Calculator</a>
-        <a class="active" href="yen.html">Yen Calculator</a>
-        <a href="requests.html">Requests</a>
-      </nav>
-    </div>
-  </header>
-
-  <main class="container page">
-    <p class="eyebrow">Section 4</p>
-    <h1>Yen Calculator</h1>
-    <p class="page-intro">The yen calculator can be built once you provide the calculations you need.</p>
-
-    <div class="placeholder">
-      <span>💰</span>
-      <h2>Calculator Coming Soon</h2>
-      <p>We'll add your yen formulas and controls here later.</p>
-    </div>
-  </main>
-
-  <footer><div class="container">© <span class="year"></span> My Website</div></footer>
-  <script src="js/main.js"></script>
-</body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Yen Calculator</title><link rel="stylesheet" href="style.css"></head><body><nav><b>👻 Ghostly Dashboard</b><div><a href="index.html">Home</a><a href="stats.html">Stats</a><a class="active" href="yen.html">Yen</a><a href="alts.html">Alt Dashboard</a><a href="admin.html">Admin</a></div></nav><main>
+<section class="card"><small>YEN PLANNER</small><h1>Yen Calculator</h1><div class="grid three"><label>Current Multiplier<select id="cur"></select></label><label>Target Multiplier<select id="target"></select></label><label>Times Needed<input id="times" type="number" min="1" value="1"></label></div><div class="result"><span>Estimated Yen Required</span><strong id="required">0</strong></div></section>
+<section class="card"><h2>Modifiers</h2><div class="grid three"><label>Class<select id="class"></select></label><label>Title<select id="title"></select></label><label>Champion Trait<select id="trait"></select></label><label>Passive<select id="passive"></select></label><label>Yen Potion<select id="potion"></select></label></div><div class="checks"><label><input id="event" type="checkbox"> Yen event (+150%)</label><label><input id="weekend" type="checkbox"> 1.5× Yen Weekend (+150%)</label></div><p id="activeMods" class="badge">No modifiers</p><button id="saveSetup" class="btn primary">Save Selected Setup</button><span id="saved"></span></section>
+<section class="card"><h2>Section 2 — Dungeons, Tower & Bosses</h2><div class="activityGrid">
+<article class="inner"><h3>🏰 Dungeons</h3><label>Minimum Yen<input id="dmin" type="number"></label><label>Maximum Yen<input id="dmax" type="number"></label><label>Clear Time (min)<input id="dtime" type="number" step=".01"></label><p>Yen/Clear: <b id="dr"></b></p><p>Yen/Minute: <b id="dpm"></b></p><p>Clears: <b id="druns"></b></p><p>Total Time: <b id="dtot"></b></p></article>
+<article class="inner"><h3>🗼 Tower</h3><label>Average Yen<input id="tyen" type="number"></label><label>Clear Time (min)<input id="ttime" type="number" step=".01"></label><p>Yen/Clear: <b id="tr"></b></p><p>Yen/Minute: <b id="tpm"></b></p><p>Clears: <b id="truns"></b></p><p>Total Time: <b id="ttot"></b></p></article>
+<article class="inner"><h3>👹 Bosses</h3><label>Average Yen<input id="byen" type="number"></label><label>Clear Time (min)<input id="btime" type="number" step=".01"></label><p>Yen/Clear: <b id="br"></b></p><p>Yen/Minute: <b id="bpm"></b></p><p>Clears: <b id="bruns"></b></p><p>Total Time: <b id="btot"></b></p></article></div></section>
+<section class="card"><h2>Section 3 — Passive & Adventures</h2><div class="grid two"><article class="inner"><h3>💰 Passive</h3><label>Base Yen/Minute<input id="pym" type="number"></label><p>Adjusted Yen/Minute: <b id="padj"></b></p><p>Minutes to target: <b id="ptime"></b></p></article><article class="inner"><h3>🗺️ Adventures</h3><label>Yen/Adventure<input id="ayen" type="number"></label><label>Time (min)<input id="atime" type="number" step=".01"></label><p>Adjusted Yen: <b id="aadj"></b></p><p>Yen/Minute: <b id="apm"></b></p><p>Adventures: <b id="aruns"></b></p><p>Total Time: <b id="atot"></b></p></article></div></section></main><footer>All values are editable from Admin.</footer><script src="main.js"></script><script src="yen.js"></script></body></html>
