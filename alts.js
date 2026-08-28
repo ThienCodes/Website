@@ -1,98 +1,58 @@
-const ALT_COUNT = 26;
+const STORAGE_KEY = "ghostlyAltDashboard";
 
-const STORAGE_KEY = "altDashboardData";
+const DEFAULT_ALT_COUNT = 26;
 
-
-const DEFAULT_DATA = [];
-
-for (let i = 1; i <= ALT_COUNT; i++) {
-
-    DEFAULT_DATA.push({
-        name: `Alt ${i}`,
+function createAlt(number) {
+    return {
+        name: `Alt ${number}`,
         description: "",
         completed: false,
 
-        tokens: {
-            value: 0,
-            enabled: true
-        },
+        tokens: 0,
+        keys: 0,
+        boosts: 0,
 
-        keys: {
-            value: 0,
-            enabled: true
-        },
-
-        boosts: {
-            value: 0,
-            enabled: true
-        }
-    });
-
+        tokensEnabled: true,
+        keysEnabled: true,
+        boostsEnabled: true
+    };
 }
 
 
-function loadData() {
+function loadAlts() {
 
     const saved =
         localStorage.getItem(STORAGE_KEY);
 
-    if (!saved) {
+    if (saved) {
 
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(DEFAULT_DATA)
-        );
-
-        return structuredClone(DEFAULT_DATA);
-
-    }
-
-    try {
-
-        const data = JSON.parse(saved);
-
-        while (data.length < ALT_COUNT) {
-
-            const number = data.length + 1;
-
-            data.push({
-                name: `Alt ${number}`,
-                description: "",
-                completed: false,
-
-                tokens: {
-                    value: 0,
-                    enabled: true
-                },
-
-                keys: {
-                    value: 0,
-                    enabled: true
-                },
-
-                boosts: {
-                    value: 0,
-                    enabled: true
-                }
-            });
-
+        try {
+            return JSON.parse(saved);
+        } catch {
+            console.log("Could not load saved alts.");
         }
 
-        return data;
-
-    } catch {
-
-        return structuredClone(DEFAULT_DATA);
-
     }
 
+    const startingAlts = [];
+
+    for (let i = 1; i <= DEFAULT_ALT_COUNT; i++) {
+        startingAlts.push(createAlt(i));
+    }
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(startingAlts)
+    );
+
+    return startingAlts;
 }
 
 
-let alts = loadData();
+let alts = loadAlts();
 
 
-function saveData() {
+function save() {
 
     localStorage.setItem(
         STORAGE_KEY,
@@ -100,16 +60,18 @@ function saveData() {
     );
 
     updateTotals();
-
 }
 
 
-function renderAlts() {
+function render() {
 
     const container =
         document.getElementById("altsContainer");
 
-    let list = [...alts];
+    container.innerHTML = "";
+
+
+    let displayedAlts = [...alts];
 
     const sort =
         document.getElementById("sortSelect").value;
@@ -117,7 +79,7 @@ function renderAlts() {
 
     if (sort === "completed") {
 
-        list.sort(
+        displayedAlts.sort(
             (a, b) =>
                 Number(b.completed) -
                 Number(a.completed)
@@ -128,7 +90,7 @@ function renderAlts() {
 
     if (sort === "uncompleted") {
 
-        list.sort(
+        displayedAlts.sort(
             (a, b) =>
                 Number(a.completed) -
                 Number(b.completed)
@@ -137,10 +99,7 @@ function renderAlts() {
     }
 
 
-    container.innerHTML = "";
-
-
-    list.forEach((alt, originalIndex) => {
+    displayedAlts.forEach(alt => {
 
         const index =
             alts.indexOf(alt);
@@ -149,14 +108,11 @@ function renderAlts() {
         const card =
             document.createElement("article");
 
-        card.className =
-            "alt-card";
+        card.className = "alt-card";
 
 
         if (alt.completed) {
-
             card.classList.add("completed");
-
         }
 
 
@@ -164,7 +120,7 @@ function renderAlts() {
 
             <div class="alt-header">
 
-                <div>
+                <div class="alt-info">
 
                     <input
                         class="alt-name"
@@ -179,11 +135,12 @@ function renderAlts() {
 
                 </div>
 
+
                 <label class="completed-check">
 
                     <input
                         type="checkbox"
-                        class="completed-box"
+                        class="completed"
                         ${alt.completed ? "checked" : ""}
                     >
 
@@ -196,22 +153,25 @@ function renderAlts() {
 
             <div class="counter-grid">
 
-                ${counterHTML(
+                ${counter(
                     "Tower Tokens",
                     "tokens",
-                    alt.tokens
+                    alt.tokens,
+                    alt.tokensEnabled
                 )}
 
-                ${counterHTML(
+                ${counter(
                     "Limbo Keys",
                     "keys",
-                    alt.keys
+                    alt.keys,
+                    alt.keysEnabled
                 )}
 
-                ${counterHTML(
+                ${counter(
                     "Server Boosts",
                     "boosts",
-                    alt.boosts
+                    alt.boosts,
+                    alt.boostsEnabled
                 )}
 
             </div>
@@ -219,8 +179,14 @@ function renderAlts() {
 
             <div class="alt-actions">
 
-                <button class="reset-alt">
+                <button
+                    class="reset-alt danger">
                     Reset This Alt
+                </button>
+
+                <button
+                    class="delete-alt danger">
+                    Delete Alt
                 </button>
 
             </div>
@@ -231,205 +197,127 @@ function renderAlts() {
         container.appendChild(card);
 
 
-        const name =
-            card.querySelector(".alt-name");
+        // Name
 
-        name.addEventListener(
-            "input",
-            () => {
+        card.querySelector(".alt-name")
+            .addEventListener("input", e => {
 
                 alts[index].name =
-                    name.value;
+                    e.target.value;
 
-                saveData();
-
-            }
-        );
-
-
-        const description =
-            card.querySelector(".description");
-
-        description.addEventListener(
-            "input",
-            () => {
-
-                alts[index].description =
-                    description.value;
-
-                saveData();
-
-            }
-        );
-
-
-        const completed =
-            card.querySelector(".completed-box");
-
-        completed.addEventListener(
-            "change",
-            () => {
-
-                alts[index].completed =
-                    completed.checked;
-
-                saveData();
-
-                renderAlts();
-
-            }
-        );
-
-
-        card
-            .querySelectorAll(".counter")
-            .forEach(counter => {
-
-                const type =
-                    counter.dataset.type;
-
-
-                const minus =
-                    counter.querySelector(".minus");
-
-                const plus =
-                    counter.querySelector(".plus");
-
-                const input =
-                    counter.querySelector(".counter-input");
-
-                const toggle =
-                    counter.querySelector(".counter-enabled");
-
-
-                plus.addEventListener(
-                    "click",
-                    () => {
-
-                        alts[index][type].value++;
-
-                        input.value =
-                            alts[index][type].value;
-
-                        saveData();
-
-                    }
-                );
-
-
-                minus.addEventListener(
-                    "click",
-                    () => {
-
-                        alts[index][type].value--;
-
-                        if (
-                            alts[index][type].value < 0
-                        ) {
-
-                            alts[index][type].value = 0;
-
-                        }
-
-                        input.value =
-                            alts[index][type].value;
-
-                        saveData();
-
-                    }
-                );
-
-
-                input.addEventListener(
-                    "change",
-                    () => {
-
-                        let value =
-                            Number(input.value);
-
-                        if (value < 0)
-                            value = 0;
-
-                        alts[index][type].value =
-                            value;
-
-                        input.value =
-                            value;
-
-                        saveData();
-
-                    }
-                );
-
-
-                toggle.addEventListener(
-                    "change",
-                    () => {
-
-                        alts[index][type].enabled =
-                            toggle.checked;
-
-                        saveData();
-
-                        renderAlts();
-
-                    }
-                );
+                save();
 
             });
 
 
-        card
-            .querySelector(".reset-alt")
-            .addEventListener(
-                "click",
-                () => {
+        // Description
 
-                    if (
-                        !confirm(
-                            `Reset ${alts[index].name}?`
-                        )
-                    ) {
+        card.querySelector(".description")
+            .addEventListener("input", e => {
 
-                        return;
+                alts[index].description =
+                    e.target.value;
 
-                    }
+                save();
+
+            });
 
 
-                    alts[index] = {
+        // Completed
 
-                        name:
-                            alts[index].name,
+        card.querySelector(".completed")
+            .addEventListener("change", e => {
 
-                        description:
-                            alts[index].description,
+                alts[index].completed =
+                    e.target.checked;
 
-                        completed: false,
+                save();
 
-                        tokens: {
-                            value: 0,
-                            enabled: true
-                        },
+                render();
 
-                        keys: {
-                            value: 0,
-                            enabled: true
-                        },
-
-                        boosts: {
-                            value: 0,
-                            enabled: true
-                        }
-
-                    };
+            });
 
 
-                    saveData();
+        setupCounter(
+            card,
+            index,
+            "tokens"
+        );
 
-                    renderAlts();
+        setupCounter(
+            card,
+            index,
+            "keys"
+        );
 
+        setupCounter(
+            card,
+            index,
+            "boosts"
+        );
+
+
+        // Reset
+
+        card.querySelector(".reset-alt")
+            .addEventListener("click", () => {
+
+                if (
+                    !confirm(
+                        `Reset ${alts[index].name}?`
+                    )
+                ) {
+                    return;
                 }
-            );
+
+
+                const oldName =
+                    alts[index].name;
+
+                const oldDescription =
+                    alts[index].description;
+
+
+                alts[index] =
+                    createAlt(index + 1);
+
+
+                alts[index].name =
+                    oldName;
+
+                alts[index].description =
+                    oldDescription;
+
+
+                save();
+
+                render();
+
+            });
+
+
+        // Delete
+
+        card.querySelector(".delete-alt")
+            .addEventListener("click", () => {
+
+                if (
+                    !confirm(
+                        `Delete ${alts[index].name}?`
+                    )
+                ) {
+                    return;
+                }
+
+
+                alts.splice(index, 1);
+
+
+                save();
+
+                render();
+
+            });
 
     });
 
@@ -439,16 +327,19 @@ function renderAlts() {
 }
 
 
-function counterHTML(
+function counter(
     title,
     type,
-    counter
+    value,
+    enabled
 ) {
 
     return `
 
-        <div class="counter ${!counter.enabled ? "disabled" : ""}"
-             data-type="${type}">
+        <div
+            class="counter ${enabled ? "" : "disabled"}"
+            data-type="${type}"
+        >
 
             <div class="counter-title">
 
@@ -459,7 +350,7 @@ function counterHTML(
                     <input
                         type="checkbox"
                         class="counter-enabled"
-                        ${counter.enabled ? "checked" : ""}
+                        ${enabled ? "checked" : ""}
                     >
 
                     Active
@@ -473,7 +364,7 @@ function counterHTML(
 
                 <button
                     class="minus"
-                    ${!counter.enabled ? "disabled" : ""}
+                    ${enabled ? "" : "disabled"}
                 >
                     −
                 </button>
@@ -483,14 +374,14 @@ function counterHTML(
                     class="counter-input"
                     type="number"
                     min="0"
-                    value="${counter.value}"
-                    ${!counter.enabled ? "disabled" : ""}
+                    value="${value}"
+                    ${enabled ? "" : "disabled"}
                 >
 
 
                 <button
                     class="plus"
-                    ${!counter.enabled ? "disabled" : ""}
+                    ${enabled ? "" : "disabled"}
                 >
                     +
                 </button>
@@ -504,6 +395,103 @@ function counterHTML(
 }
 
 
+function setupCounter(
+    card,
+    index,
+    type
+) {
+
+    const box =
+        card.querySelector(
+            `[data-type="${type}"]`
+        );
+
+
+    const input =
+        box.querySelector(".counter-input");
+
+    const minus =
+        box.querySelector(".minus");
+
+    const plus =
+        box.querySelector(".plus");
+
+    const enabled =
+        box.querySelector(".counter-enabled");
+
+
+    plus.addEventListener(
+        "click",
+        () => {
+
+            alts[index][type]++;
+
+            input.value =
+                alts[index][type];
+
+            save();
+
+        }
+    );
+
+
+    minus.addEventListener(
+        "click",
+        () => {
+
+            alts[index][type]--;
+
+            if (
+                alts[index][type] < 0
+            ) {
+                alts[index][type] = 0;
+            }
+
+            input.value =
+                alts[index][type];
+
+            save();
+
+        }
+    );
+
+
+    input.addEventListener(
+        "change",
+        () => {
+
+            let value =
+                Number(input.value);
+
+            if (value < 0)
+                value = 0;
+
+            alts[index][type] =
+                value;
+
+            save();
+
+        }
+    );
+
+
+    enabled.addEventListener(
+        "change",
+        () => {
+
+            alts[index][`${type}Enabled`] =
+                enabled.checked;
+
+            save();
+
+            render();
+
+        }
+    );
+
+}
+
+
 function updateTotals() {
 
     let tokens = 0;
@@ -513,86 +501,140 @@ function updateTotals() {
 
     alts.forEach(alt => {
 
-        if (alt.tokens.enabled)
-            tokens += Number(alt.tokens.value) || 0;
+        if (alt.tokensEnabled) {
 
-        if (alt.keys.enabled)
-            keys += Number(alt.keys.value) || 0;
+            tokens +=
+                Number(alt.tokens) || 0;
 
-        if (alt.boosts.enabled)
-            boosts += Number(alt.boosts.value) || 0;
+        }
+
+
+        if (alt.keysEnabled) {
+
+            keys +=
+                Number(alt.keys) || 0;
+
+        }
+
+
+        if (alt.boostsEnabled) {
+
+            boosts +=
+                Number(alt.boosts) || 0;
+
+        }
 
     });
 
 
-    document.getElementById("totalTokens")
-        .textContent = tokens;
+    document.getElementById(
+        "totalTokens"
+    ).textContent = tokens;
 
-    document.getElementById("totalKeys")
-        .textContent = keys;
 
-    document.getElementById("totalBoosts")
-        .textContent = boosts;
+    document.getElementById(
+        "totalKeys"
+    ).textContent = keys;
+
+
+    document.getElementById(
+        "totalBoosts"
+    ).textContent = boosts;
 
 }
 
 
-document
-    .getElementById("sortSelect")
-    .addEventListener(
-        "change",
-        renderAlts
-    );
+document.getElementById(
+    "sortSelect"
+).addEventListener(
+    "change",
+    render
+);
 
 
-document
-    .getElementById("resetAll")
-    .addEventListener(
-        "click",
-        () => {
+// Reset all
 
-            if (
-                !confirm(
-                    "Are you sure you want to reset ALL 26 alts?"
-                )
-            ) {
+document.getElementById(
+    "resetAll"
+).addEventListener(
+    "click",
+    () => {
 
-                return;
-
-            }
-
-
-            alts =
-                alts.map(alt => ({
-
-                    ...alt,
-
-                    completed: false,
-
-                    tokens: {
-                        ...alt.tokens,
-                        value: 0
-                    },
-
-                    keys: {
-                        ...alt.keys,
-                        value: 0
-                    },
-
-                    boosts: {
-                        ...alt.boosts,
-                        value: 0
-                    }
-
-                }));
-
-
-            saveData();
-
-            renderAlts();
-
+        if (
+            !confirm(
+                "Are you sure you want to reset ALL alts?"
+            )
+        ) {
+            return;
         }
+
+
+        alts =
+            alts.map((alt, index) => {
+
+                const newAlt =
+                    createAlt(index + 1);
+
+                newAlt.name =
+                    alt.name;
+
+                newAlt.description =
+                    alt.description;
+
+                return newAlt;
+
+            });
+
+
+        save();
+
+        render();
+
+    }
+);
+
+
+// Add Alt button
+
+function addAlt() {
+
+    const number =
+        alts.length + 1;
+
+    alts.push(
+        createAlt(number)
     );
+
+    save();
+
+    render();
+
+}
+
+
+// Add button
+
+const addButton =
+    document.createElement("button");
+
+addButton.textContent =
+    "+ Add Alt";
+
+addButton.className =
+    "add-alt";
+
+
+document.querySelector(
+    ".controls"
+).appendChild(
+    addButton
+);
+
+
+addButton.addEventListener(
+    "click",
+    addAlt
+);
 
 
 function escapeHTML(value) {
@@ -607,4 +649,4 @@ function escapeHTML(value) {
 }
 
 
-renderAlts();
+render();
