@@ -614,27 +614,8 @@ function addAlt() {
 
 // Add button
 
-const addButton =
-    document.createElement("button");
-
-addButton.textContent =
-    "+ Add Alt";
-
-addButton.className =
-    "add-alt";
-
-
-document.querySelector(
-    ".controls"
-).appendChild(
-    addButton
-);
-
-
-addButton.addEventListener(
-    "click",
-    addAlt
-);
+document.getElementById("addAlt")
+    .addEventListener("click", addAlt);
 
 
 function escapeHTML(value) {
