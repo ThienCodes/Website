@@ -40,21 +40,39 @@
 
     <section class="controls card">
 
-        <label>
-            Sort:
-            <select id="sortSelect">
-                <option value="default">Default</option>
-                <option value="completed">Completed First</option>
-                <option value="uncompleted">Uncompleted First</option>
-            </select>
-        </label>
+    <label>
+        Sort:
+        <select id="sortSelect">
+            <option value="default">Default</option>
+            <option value="completed">Completed First</option>
+            <option value="uncompleted">Uncompleted First</option>
+        </select>
+    </label>
 
-        <button id="resetAll" class="danger">
-            Reset All Alts
+    <button id="resetAll" class="danger">
+        Reset All Alts
+    </button>
+
+    <div class="backup-controls">
+
+        <button id="downloadBackup">
+            💾 Download Backup
         </button>
 
-    </section>
+        <button id="restoreBackup">
+            📥 Restore Backup
+        </button>
 
+        <input
+            type="file"
+            id="backupFile"
+            accept=".json"
+            hidden
+        >
+
+    </div>
+
+</section>
 
     <section id="altsContainer" class="alts-grid"></section>
 
