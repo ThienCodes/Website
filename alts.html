@@ -1,7 +1,66 @@
-<nav>
-    <b>👻 Ghostly Dashboard</b>
-    <div>
-        <a href="index.html">Home</a>
-        <a class="active" href="alts.html">Alt Dashboard</a>
-    </div>
-</nav>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alt Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>👻 Alt Dashboard</h1>
+    <p>Manage your 26 alt accounts</p>
+</header>
+
+<main>
+
+    <section class="totals card">
+        <h2>Current Totals</h2>
+
+        <div class="total-grid">
+            <div>
+                <span>Tower Tokens</span>
+                <strong id="totalTokens">0</strong>
+            </div>
+
+            <div>
+                <span>Limbo Keys</span>
+                <strong id="totalKeys">0</strong>
+            </div>
+
+            <div>
+                <span>Server Boosts</span>
+                <strong id="totalBoosts">0</strong>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="controls card">
+
+        <label>
+            Sort:
+            <select id="sortSelect">
+                <option value="default">Default</option>
+                <option value="completed">Completed First</option>
+                <option value="uncompleted">Uncompleted First</option>
+            </select>
+        </label>
+
+        <button id="resetAll" class="danger">
+            Reset All Alts
+        </button>
+
+    </section>
+
+
+    <section id="altsContainer" class="alts-grid"></section>
+
+</main>
+
+<script src="alt.js"></script>
+
+</body>
+</html>
