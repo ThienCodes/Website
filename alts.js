@@ -1,1 +1,610 @@
-let d=data();if(admin()){document.getElementById("private").classList.remove("hidden");document.getElementById("lock").classList.add("hidden");render()}function render(){let a=[...d.alts],s=id("sort").value;if(s==="completed")a.sort((x,y)=>y.done-x.done);if(s==="uncompleted")a.sort((x,y)=>x.done-y.done);if(s==="enabled")a.sort((x,y)=>y.enabled-x.enabled);if(s==="disabled")a.sort((x,y)=>x.enabled-y.enabled);id("alts").innerHTML=a.map(x=>`<article class="alt ${x.done?"done":""} ${x.enabled?"":"disabled"}"><div class="altTop"><div><h2>${esc(x.name)}</h2><label>Description<input class="desc" value="${esc(x.description)}"></label></div><div><label><input class="enabled" type="checkbox" ${x.enabled?"checked":""}> Enabled</label><label><input class="done" type="checkbox" ${x.done?"checked":""}> Completed</label></div></div><div class="counterGrid">${counter("Tower Tokens","tokens",x.tokens)}${counter("Limbo Keys","keys",x.keys)}${counter("Server Boosts","boosts",x.boosts)}</div><button class="btn" data-reset>Reset Alt</button><button class="btn danger" data-del>Delete Alt</button></article>`).join("");document.querySelectorAll(".alt").forEach((card,i)=>{let x=d.alts.find(z=>z.id===a[i].id);card.querySelector(".desc").onchange=e=>{x.description=e.target.value;save("Edited description")};card.querySelector(".enabled").onchange=e=>{x.enabled=e.target.checked;save("Changed enabled");render()};card.querySelector(".done").onchange=e=>{x.done=e.target.checked;save("Changed completed");render()};card.querySelectorAll("[data-key]").forEach(inp=>inp.onchange=e=>{x[inp.dataset.key]=Math.max(0,+e.target.value||0);save("Edited alt counter");render()});card.querySelectorAll("[data-delta]").forEach(b=>b.onclick=()=>{let k=b.dataset.delta;x[k]=Math.max(0,x[k]+(+b.dataset.amount));save("Changed alt counter");render()});card.querySelector("[data-reset]").onclick=()=>{if(confirm(`Reset ${x.name}?`)){x.tokens=x.keys=x.boosts=0;x.done=false;save(`Reset ${x.name}`);render()}};card.querySelector("[data-del]").onclick=()=>{if(confirm(`Delete ${x.name}?`)){d.alts=d.alts.filter(z=>z.id!==x.id);save(`Deleted ${x.name}`);render()}}});let e=d.alts.filter(x=>x.enabled),all=e.length;id("totalTokens").textContent=fmt(e.reduce((s,x)=>s+x.tokens,0));id("totalKeys").textContent=fmt(e.reduce((s,x)=>s+x.keys,0));id("totalBoosts").textContent=fmt(e.reduce((s,x)=>s+x.boosts,0));id("completed").textContent=`${e.filter(x=>x.done).length}/${all}`;id("enabled").textContent=`${all}/26`}function counter(n,k,v){return `<div class="counter"><b>${n}</b><input data-key="${k}" type="number" value="${v}"><button class="btn" data-delta="${k}" data-amount="-1">−</button><button class="btn primary" data-delta="${k}" data-amount="1">+</button></div>`}function save(m){localStorage.setItem(KEY,JSON.stringify(d));hist(m)}function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}id("sort").onchange=render;id("resetAll").onclick=()=>{if(confirm("Reset ALL 26 alts?")){d.alts.forEach(x=>{x.tokens=x.keys=x.boosts=0;x.done=false});save("Reset all alts");render()}};
+const ALT_COUNT = 26;
+
+const STORAGE_KEY = "altDashboardData";
+
+
+const DEFAULT_DATA = [];
+
+for (let i = 1; i <= ALT_COUNT; i++) {
+
+    DEFAULT_DATA.push({
+        name: `Alt ${i}`,
+        description: "",
+        completed: false,
+
+        tokens: {
+            value: 0,
+            enabled: true
+        },
+
+        keys: {
+            value: 0,
+            enabled: true
+        },
+
+        boosts: {
+            value: 0,
+            enabled: true
+        }
+    });
+
+}
+
+
+function loadData() {
+
+    const saved =
+        localStorage.getItem(STORAGE_KEY);
+
+    if (!saved) {
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(DEFAULT_DATA)
+        );
+
+        return structuredClone(DEFAULT_DATA);
+
+    }
+
+    try {
+
+        const data = JSON.parse(saved);
+
+        while (data.length < ALT_COUNT) {
+
+            const number = data.length + 1;
+
+            data.push({
+                name: `Alt ${number}`,
+                description: "",
+                completed: false,
+
+                tokens: {
+                    value: 0,
+                    enabled: true
+                },
+
+                keys: {
+                    value: 0,
+                    enabled: true
+                },
+
+                boosts: {
+                    value: 0,
+                    enabled: true
+                }
+            });
+
+        }
+
+        return data;
+
+    } catch {
+
+        return structuredClone(DEFAULT_DATA);
+
+    }
+
+}
+
+
+let alts = loadData();
+
+
+function saveData() {
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(alts)
+    );
+
+    updateTotals();
+
+}
+
+
+function renderAlts() {
+
+    const container =
+        document.getElementById("altsContainer");
+
+    let list = [...alts];
+
+    const sort =
+        document.getElementById("sortSelect").value;
+
+
+    if (sort === "completed") {
+
+        list.sort(
+            (a, b) =>
+                Number(b.completed) -
+                Number(a.completed)
+        );
+
+    }
+
+
+    if (sort === "uncompleted") {
+
+        list.sort(
+            (a, b) =>
+                Number(a.completed) -
+                Number(b.completed)
+        );
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    list.forEach((alt, originalIndex) => {
+
+        const index =
+            alts.indexOf(alt);
+
+
+        const card =
+            document.createElement("article");
+
+        card.className =
+            "alt-card";
+
+
+        if (alt.completed) {
+
+            card.classList.add("completed");
+
+        }
+
+
+        card.innerHTML = `
+
+            <div class="alt-header">
+
+                <div>
+
+                    <input
+                        class="alt-name"
+                        value="${escapeHTML(alt.name)}"
+                        placeholder="Alt name"
+                    >
+
+                    <textarea
+                        class="description"
+                        placeholder="Description..."
+                    >${escapeHTML(alt.description)}</textarea>
+
+                </div>
+
+                <label class="completed-check">
+
+                    <input
+                        type="checkbox"
+                        class="completed-box"
+                        ${alt.completed ? "checked" : ""}
+                    >
+
+                    Completed
+
+                </label>
+
+            </div>
+
+
+            <div class="counter-grid">
+
+                ${counterHTML(
+                    "Tower Tokens",
+                    "tokens",
+                    alt.tokens
+                )}
+
+                ${counterHTML(
+                    "Limbo Keys",
+                    "keys",
+                    alt.keys
+                )}
+
+                ${counterHTML(
+                    "Server Boosts",
+                    "boosts",
+                    alt.boosts
+                )}
+
+            </div>
+
+
+            <div class="alt-actions">
+
+                <button class="reset-alt">
+                    Reset This Alt
+                </button>
+
+            </div>
+
+        `;
+
+
+        container.appendChild(card);
+
+
+        const name =
+            card.querySelector(".alt-name");
+
+        name.addEventListener(
+            "input",
+            () => {
+
+                alts[index].name =
+                    name.value;
+
+                saveData();
+
+            }
+        );
+
+
+        const description =
+            card.querySelector(".description");
+
+        description.addEventListener(
+            "input",
+            () => {
+
+                alts[index].description =
+                    description.value;
+
+                saveData();
+
+            }
+        );
+
+
+        const completed =
+            card.querySelector(".completed-box");
+
+        completed.addEventListener(
+            "change",
+            () => {
+
+                alts[index].completed =
+                    completed.checked;
+
+                saveData();
+
+                renderAlts();
+
+            }
+        );
+
+
+        card
+            .querySelectorAll(".counter")
+            .forEach(counter => {
+
+                const type =
+                    counter.dataset.type;
+
+
+                const minus =
+                    counter.querySelector(".minus");
+
+                const plus =
+                    counter.querySelector(".plus");
+
+                const input =
+                    counter.querySelector(".counter-input");
+
+                const toggle =
+                    counter.querySelector(".counter-enabled");
+
+
+                plus.addEventListener(
+                    "click",
+                    () => {
+
+                        alts[index][type].value++;
+
+                        input.value =
+                            alts[index][type].value;
+
+                        saveData();
+
+                    }
+                );
+
+
+                minus.addEventListener(
+                    "click",
+                    () => {
+
+                        alts[index][type].value--;
+
+                        if (
+                            alts[index][type].value < 0
+                        ) {
+
+                            alts[index][type].value = 0;
+
+                        }
+
+                        input.value =
+                            alts[index][type].value;
+
+                        saveData();
+
+                    }
+                );
+
+
+                input.addEventListener(
+                    "change",
+                    () => {
+
+                        let value =
+                            Number(input.value);
+
+                        if (value < 0)
+                            value = 0;
+
+                        alts[index][type].value =
+                            value;
+
+                        input.value =
+                            value;
+
+                        saveData();
+
+                    }
+                );
+
+
+                toggle.addEventListener(
+                    "change",
+                    () => {
+
+                        alts[index][type].enabled =
+                            toggle.checked;
+
+                        saveData();
+
+                        renderAlts();
+
+                    }
+                );
+
+            });
+
+
+        card
+            .querySelector(".reset-alt")
+            .addEventListener(
+                "click",
+                () => {
+
+                    if (
+                        !confirm(
+                            `Reset ${alts[index].name}?`
+                        )
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    alts[index] = {
+
+                        name:
+                            alts[index].name,
+
+                        description:
+                            alts[index].description,
+
+                        completed: false,
+
+                        tokens: {
+                            value: 0,
+                            enabled: true
+                        },
+
+                        keys: {
+                            value: 0,
+                            enabled: true
+                        },
+
+                        boosts: {
+                            value: 0,
+                            enabled: true
+                        }
+
+                    };
+
+
+                    saveData();
+
+                    renderAlts();
+
+                }
+            );
+
+    });
+
+
+    updateTotals();
+
+}
+
+
+function counterHTML(
+    title,
+    type,
+    counter
+) {
+
+    return `
+
+        <div class="counter ${!counter.enabled ? "disabled" : ""}"
+             data-type="${type}">
+
+            <div class="counter-title">
+
+                <span>${title}</span>
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        class="counter-enabled"
+                        ${counter.enabled ? "checked" : ""}
+                    >
+
+                    Active
+
+                </label>
+
+            </div>
+
+
+            <div class="counter-controls">
+
+                <button
+                    class="minus"
+                    ${!counter.enabled ? "disabled" : ""}
+                >
+                    −
+                </button>
+
+
+                <input
+                    class="counter-input"
+                    type="number"
+                    min="0"
+                    value="${counter.value}"
+                    ${!counter.enabled ? "disabled" : ""}
+                >
+
+
+                <button
+                    class="plus"
+                    ${!counter.enabled ? "disabled" : ""}
+                >
+                    +
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+function updateTotals() {
+
+    let tokens = 0;
+    let keys = 0;
+    let boosts = 0;
+
+
+    alts.forEach(alt => {
+
+        if (alt.tokens.enabled)
+            tokens += Number(alt.tokens.value) || 0;
+
+        if (alt.keys.enabled)
+            keys += Number(alt.keys.value) || 0;
+
+        if (alt.boosts.enabled)
+            boosts += Number(alt.boosts.value) || 0;
+
+    });
+
+
+    document.getElementById("totalTokens")
+        .textContent = tokens;
+
+    document.getElementById("totalKeys")
+        .textContent = keys;
+
+    document.getElementById("totalBoosts")
+        .textContent = boosts;
+
+}
+
+
+document
+    .getElementById("sortSelect")
+    .addEventListener(
+        "change",
+        renderAlts
+    );
+
+
+document
+    .getElementById("resetAll")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (
+                !confirm(
+                    "Are you sure you want to reset ALL 26 alts?"
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            alts =
+                alts.map(alt => ({
+
+                    ...alt,
+
+                    completed: false,
+
+                    tokens: {
+                        ...alt.tokens,
+                        value: 0
+                    },
+
+                    keys: {
+                        ...alt.keys,
+                        value: 0
+                    },
+
+                    boosts: {
+                        ...alt.boosts,
+                        value: 0
+                    }
+
+                }));
+
+
+            saveData();
+
+            renderAlts();
+
+        }
+    );
+
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+renderAlts();
