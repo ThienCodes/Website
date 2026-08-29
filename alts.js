@@ -360,7 +360,16 @@ function counter(
             </div>
 
 
-            <div class="counter-controls">
+            <input
+                class="counter-input"
+                type="number"
+                min="0"
+                value="${value}"
+                ${enabled ? "" : "disabled"}
+            >
+
+
+            <div class="counter-buttons">
 
                 <button
                     class="minus"
@@ -368,16 +377,6 @@ function counter(
                 >
                     −
                 </button>
-
-
-                <input
-                    class="counter-input"
-                    type="number"
-                    min="0"
-                    value="${value}"
-                    ${enabled ? "" : "disabled"}
-                >
-
 
                 <button
                     class="plus"
@@ -393,7 +392,6 @@ function counter(
     `;
 
 }
-
 
 function setupCounter(
     card,
@@ -420,41 +418,51 @@ function setupCounter(
         box.querySelector(".counter-enabled");
 
 
+    // Add the typed amount
+
     plus.addEventListener(
         "click",
         () => {
 
-            alts[index][type]++;
+            const amount =
+                Number(input.value) || 0;
 
-            input.value =
-                alts[index][type];
+            alts[index][type] += amount;
 
             save();
+
+            render();
 
         }
     );
 
+
+    // Subtract the typed amount
 
     minus.addEventListener(
         "click",
         () => {
 
-            alts[index][type]--;
+            const amount =
+                Number(input.value) || 0;
 
-            if (
-                alts[index][type] < 0
-            ) {
+            alts[index][type] -= amount;
+
+
+            if (alts[index][type] < 0) {
                 alts[index][type] = 0;
             }
 
-            input.value =
-                alts[index][type];
 
             save();
+
+            render();
 
         }
     );
 
+
+    // Directly edit the stored amount
 
     input.addEventListener(
         "change",
@@ -463,17 +471,26 @@ function setupCounter(
             let value =
                 Number(input.value);
 
-            if (value < 0)
+            if (
+                !Number.isFinite(value) ||
+                value < 0
+            ) {
                 value = 0;
+            }
+
 
             alts[index][type] =
                 value;
 
             save();
 
+            render();
+
         }
     );
 
+
+    // Enable / disable counter
 
     enabled.addEventListener(
         "change",
