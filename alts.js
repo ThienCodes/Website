@@ -323,7 +323,27 @@ function render() {
                 render();
 
             });
+card.querySelector(".trade-button")
+    .addEventListener("click", () => {
 
+        if (alts[index].tokens < 500) {
+
+            alert(
+                `${alts[index].name} does not have enough Tower Tokens.`
+            );
+
+            return;
+        }
+
+        alts[index].tokens -= 500;
+
+        alts[index].keys += 10;
+
+        save();
+
+        render();
+
+    });
     });
 
 
