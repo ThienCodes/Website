@@ -179,17 +179,22 @@ function render() {
 
             <div class="alt-actions">
 
-                <button
-                    class="reset-alt danger">
-                    Reset This Alt
-                </button>
+    <button
+        class="trade-button">
+        🔄 −500 Tokens / +10 Keys
+    </button>
 
-                <button
-                    class="delete-alt danger">
-                    Delete Alt
-                </button>
+    <button
+        class="reset-alt danger">
+        Reset This Alt
+    </button>
 
-            </div>
+    <button
+        class="delete-alt danger">
+        Delete Alt
+    </button>
+
+</div>
 
         `;
 
